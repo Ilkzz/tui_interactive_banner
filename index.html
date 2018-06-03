@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<div id="con">
+	<div id="clickthrough"></div>
+		<img class="logo" id="logo" src="img/logo.svg">
+		<div class="viewScene">
+			<div class="textBox" id="viewTextBox"><p id="sunset_text"></p></div>
+			<div class="imageWrapper">
+				<img class="background" id="img1" src="img/view/couples_1a_800x960.jpg">
+				<img class="background" id="img2" src="img/view/couples_1b_800x960.jpg">
+			</div>
+			<div class="viewDraggerCon">
+				<div id="viewDragger"></div>
+				<img class="viewDragInstruction" src="img/view/graphic_sunset.svg" alt="">
+			</div>
+		</div>
+		<div class="massageScene">
+			<div class="textBox" id="massageTextBox"><p id="massage_text"></p></div>
+			<div class="imageWrapper">
+				<img class="background" id="img3" src="img/massage/massage.jpg">
+			</div>
+			<div class="massageDraggerCon">
+				<div id="cucumberSnap1" class="snapPoint"></div>
+				<div id="cucumberSnap2" class="snapPoint"></div>
+				<img class="massageInstruction" src="img/massage/graphic_relaxation.svg">
+				<img src="img/massage/cucumber.png" id="cucumber1">
+				<img src="img/massage/cucumber.png" id="cucumber2">
+			</div>
+		</div>
+		<div class="candleScene">
+			<div class="textBox" id="candleTextBox"><p id="candle_text"></p></div>
+			<div class="imageWrapper">
+				<img class="background" id="img4" src="img/candle/candleBackground.jpg">
+				<img class="background" id="img5" src="img/candle/candleBackground2.jpg">
+			</div>
+			<img class="candleInstruction" src="img/candle/graphic_romance.svg">
+			<img class="candle" src="img/candle/candle.png">
+			<div class="flicker"></div>
+		</div>
+		<div class="videoScene">
+			<div class="textBox" id="videoTextBox"><p id="video_text"></p></div>
+			<div class="imageWrapper">
+				<img class="background" id="img7" src="img/cruise_frame4.jpg">
+			</div>
+		</div>
+		<div id="endFrame" class="endFrame">
+			<p id="title"></p>
+			<div class="textBoxEnd" id="endFrameTextBox">
+				<p id="endFrame_text"></p>
+				<div id="cta"></div>
+			</div>
+			<div class="imageWrapper">
+				<img class="background" id="img6" src="img/endframebackground.jpg">
+			</div>
+			<img class="abta" src="img/endframe/abta.svg">
+			<img class="atol" src="img/endframe/atol.svg">
+			<img class="wot" src="img/endframe/wot.svg">
+			<p id="tc"></p>
+		</div>
+		<div id="timer"></div>
+	</div>
+	<script src="https://cdn.flashtalking.com/frameworks/js/jquery/jquery-1.7.2.min.js"></script>
+	<script src="https://cdn.flashtalking.com/frameworks/js/jquery/1.8.21/jquery-ui.min.js"></script>
+	<script src="https://cdn.flashtalking.com/frameworks/js/gsap/1.19.0/TweenMax.min.js"></script>
+	<script src="https://cdn.flashtalking.com/frameworks/js/api/2/10/html5API.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
+	<script src="js/mobiletouch.js"></script>
+	<script src="js/flicker.js"></script>
+	<script>
+		var loadOnce = false;
+		var v = myFT.$("#video");
+		var c = myFT.$("#clickthrough");
+		var e = myFT.$("#endFrame");
+		var t = myFT.$("#timer");
+		var preset = {
+            candle : {
+                flickerRate    : 10,
+                spread         : 0.5,
+                spikeFrequency : 0.05
+            },
+            fire : {
+                flickerRate    : 30,
+                average        : 3,
+                spread         : 0.5,
+                offset         : 0.5,
+                cssSmooth      : false,
+                spikeFrequency : 0.2
+            },
+            firefly : {
+                flickerRate    : 5,
+                average        : 3,
+                spread         : 0.4,
+                offset         : 0.4,
+                spikeFrequency : 0.0
+            }
+        };
+
+		myFT.on("instantads", function(){
+			console.log("myft loaded")
+			document.getElementById("sunset_text").innerHTML = myFT.instantAds.sunset_text;
+			document.getElementById("cta").innerHTML = myFT.instantAds.cta;
+			document.getElementById("tc").innerHTML = myFT.instantAds.tc;
+			waitForWebfonts(['TuiLtReg', 'Arrows'], function(){
+				setTimeout(function(){ viewScene() }, 500);
+			});
+			//massageScene();
+			//candleScene();
+			//videoScene();
+			//endFrame();
+			myFT.applyButton(c, clickThrough);
+		});
+
+		function clickThrough() {
+    		myFT.clickTag(1, myFT.instantAds.clickThrough);
+    	};
+
+		function timerView() {
+			TweenMax.fromTo("#timer", 5, {top:0}, {top:10, onComplete:noTouchSunset});
+		}
+
+		function timerMassage() {
+			TweenMax.fromTo("#timer", 5, {top:0}, {top:10, onComplete:noTouchMassage});
+		}
+
+		function timerCandle() {
+			TweenMax.fromTo("#timer", 5, {top:0}, {top:10, onComplete:noTouchCandle});
+		}
+		
+		function viewScene() {
+			sunsetDragger();
+			var vs = new TimelineMax();
+			vs.fromTo(".viewScene", 0, {autoAlpha:0}, {autoAlpha:1});
+			vs.fromTo([".logo", "#img1"], 0.5, {autoAlpha:0}, {autoAlpha:1});
+			vs.fromTo("#viewTextBox", 0.5, {width:"0", height:"0", autoAlpha:0}, {width:"90%", height:"15%", autoAlpha:1}, "+=0.5");
+			vs.fromTo("#sunset_text", 0.5, {autoAlpha:0}, {autoAlpha:1});
+			vs.fromTo(".viewDragInstruction", 0.5, {autoAlpha:0}, {autoAlpha:1, onComplete:timerView});
+		}
+
+		function massageScene() {
+			cucumberDragger();
+			document.getElementById("massage_text").innerHTML = myFT.instantAds.massage_text;
+			var ms = new TimelineMax();
+			ms.fromTo(".massageScene", 0, {autoAlpha:0}, {autoAlpha:1});
+			ms.fromTo("#img3", 0.5, {autoAlpha:0}, {autoAlpha:1});
+			ms.fromTo("#massageTextBox", 0.5, {width:"0", height:"0", autoAlpha:0}, {width:"90%", height:"15%", autoAlpha:1}, "+=0.5");
+			ms.fromTo("#massage_text", 0.5, {autoAlpha:0}, {autoAlpha:1, onComplete:timerMassage});
+		}
+
+		function candleScene() {
+			document.getElementById("candle_text").innerHTML = myFT.instantAds.candle_text;
+			document.getElementById("logo").src = "img/candle/logo_white.svg";
+			var cs = new TimelineMax();
+			cs.fromTo(".candleScene", 0, {autoAlpha:0}, {autoAlpha:1});
+			cs.fromTo("#img4", 0.5, {autoAlpha:0}, {autoAlpha:1});
+			cs.fromTo("#candleTextBox", 0.5, {width:"0", height:"0", autoAlpha:0}, {width:"90%", height:"15%", autoAlpha:1}, "+=0.5");
+			cs.fromTo(["#candle_text", ".candleInstruction"], 0.5, {autoAlpha:0}, {autoAlpha:1, onComplete:timerCandle});
+			candleLight();
+		}
+
+		function videoScene() {
+			document.getElementById("video_text").innerHTML = myFT.instantAds.video_text;
+			var vs = new TimelineMax();
+			vs.fromTo(".videoScene", 0, {autoAlpha:0}, {autoAlpha:1});
+			vs.fromTo("#img7", 0.5, {autoAlpha:0}, {autoAlpha:1});
+			vs.fromTo("#img7", 5, {scale:1}, {scale:1.1});
+			vs.fromTo("#videoTextBox", 0.5, {width:"0", height:"0", autoAlpha:0}, {width:"90%", height:"20%", autoAlpha:1}, "-=5.5");
+			vs.fromTo("#video_text", 0.5, {autoAlpha:0}, {autoAlpha:1}, "-=5");
+		    vs.to(".videoScene", 0.5, {autoAlpha:0}, "-=1.5");
+		    vs.fromTo(".endFrame", 0.5, {autoAlpha:0}, {autoAlpha:1, onComplete:endFrame}, "-=0.5");
+			myFT.tracker("videoSceneDisplayed");
+		}
+
+		function endFrame() {
+			var ef = new TimelineMax();
+			document.getElementById("title").innerHTML = myFT.instantAds.endFrame_title;
+			document.getElementById("endFrame_text").innerHTML = myFT.instantAds.endFrame_text;
+			ef.fromTo("#img6", 0.5, {autoAlpha:0}, {autoAlpha:1});
+			ef.fromTo("#title", 0.5, {autoAlpha:0}, {autoAlpha:1});
+			ef.fromTo("#endFrameTextBox", 0.5, {width:"0", height:"0", autoAlpha:0}, {width:"65%", height:"25%", autoAlpha:1}, "+=0.5");
+			ef.fromTo(["#endFrame_text", "#cta"], 0.5, {autoAlpha:0}, {autoAlpha:1});
+			ef.fromTo([".abta", ".atol", "#tc"], 0.5, {autoAlpha:0}, {autoAlpha:1});
+			ef.fromTo(".wot", 0.5, {bottom:-100}, {bottom:0});
+			myFT.tracker("endFrameDisplayed");
+			myFT.applyButton(e, clickThrough);
+		}
+
+		function noTouchSunset() {
+			$("#viewDragger").hide();
+			var tl = new TimelineMax();
+			tl.fromTo(".viewDragInstruction", 1, {autoAlpha:1}, {autoAlpha:0});
+			tl.fromTo("#img1", 2, {autoAlpha:1}, {autoAlpha:0});
+			tl.fromTo("#img2", 2, {autoAlpha:0}, {autoAlpha:1}, "-=2");
+			tl.fromTo(".viewScene", 0.5, {autoAlpha:1}, {autoAlpha:0, onComplete:massageScene}, "+=0.5");
+			myFT.tracker("viewSceneAutoplay");
+		}
+
+		function noTouchMassage() {
+			var tl = new TimelineMax();
+			tl.fromTo(".massageInstruction", 0.5, {autoAlpha:1}, {autoAlpha:0});
+			tl.to(document.getElementById("cucumber1"), 1, {bezier:[{left:"19%", top:"44%"}, {left:"40%", top:"48%"}], ease:Power1.easeInOut});
+			tl.to(document.getElementById("cucumber2"), 1, {bezier:[{left:"22%", top:"59%"}, {left:"40%", top:"67%"}], ease:Power1.easeInOut});
+			tl.fromTo(".massageScene", 0.5, {autoAlpha:1}, {autoAlpha:0, onComplete:candleScene}, "+=0.5");
+			myFT.tracker("massageSceneAutoplay");
+		}
+
+		function noTouchCandle() {
+			var tl = new TimelineMax();
+			tl.fromTo(".candleInstruction", 0.5, {autoAlpha:1}, {autoAlpha:0});
+			tl.fromTo("#img4", 2, {autoAlpha:1}, {autoAlpha:0});
+			tl.fromTo("#img5", 2, {autoAlpha:0}, {autoAlpha:1}, "-=2");
+			tl.fromTo(".candle", 0.5, {scale:0}, {scale:1});
+			tl.fromTo(".flicker", 0.8, {autoAlpha:0}, {autoAlpha:1});
+			tl.fromTo(".candleScene", 0.5, {autoAlpha:1}, {autoAlpha:0, onComplete:videoScene}, "+=2");
+			$('.flicker').flicker( preset.candle );
+			myFT.tracker("candleSceneAutoplay");
+			document.getElementById("logo").src = "img/logo.svg";
+		}
+
+		function sunsetDragger() {
+			$('#viewDragger').draggable({
+				axis: "y", 
+				// containment: 'parent',
+				drag: function(event, ui){
+		            var position = $(this).position();
+		            var yPos = position.top;
+		            TweenMax.killTweensOf(t);
+		            myFT.tracker("viewSceneInteract");
+		            $("#img1").css('opacity', 1-ui.position.top/ $(".viewDraggerCon").height());
+		            $("#img2").css('opacity', 0+ui.position.top/ $(".viewDraggerCon").height());
+		        },
+		        stop: function() {
+		        	var x = $("#viewDragger").position().top;
+		        	if(x >= 255) {
+		        		var tl = new TimelineMax();
+		        		$(this).draggable( "disable" );
+		        		tl.fromTo(".viewDragInstruction", 0.5, {autoAlpha:1}, {autoAlpha:0});
+		        		tl.fromTo(".viewScene", 0.5, {autoAlpha:1}, {autoAlpha:0, onComplete:massageScene}, "+=1");
+		        	}
+		        }
+			});
+		};
+		
+		function cucumberDragger() {
+			var count = 0;
+			$("#cucumber1, #cucumber2").draggable({
+				containment: 'parent',
+				drag: function(){
+					TweenMax.killTweensOf(t);
+					myFT.tracker("massageSceneInteract");
+				}
+			});
+
+			$('.snapPoint').droppable({	
+			    drop: function(event, ui) {
+           			var $this = $(this);
+	            	$this.append(ui.draggable);    
+            
+		            var width = $this.width();
+		            var height = $this.height();
+		            var cntrLeft = (width / 2) - (ui.draggable.width() / 2);
+		            var cntrTop = (height / 2) - (ui.draggable.height() / 2);
+            
+		            ui.draggable.css({
+		                left: "0%",
+		                top: "0%",
+		                width: "100%"
+		            });
+
+		           	var a = ui.draggable;
+		           	$(a).draggable('disable');
+		            	
+		            count++;
+			      	if(count == 2) {
+		    	  		$("#cucumber1, #cucumber2").draggable('disable');
+		    	  		var tl = new TimelineMax;
+		    	  		tl.fromTo(".massageInstruction", 0.5, {autoAlpha:1}, {autoAlpha:0});
+		    	  		tl.fromTo(".massageScene", 0.5, {autoAlpha:1}, {autoAlpha:0, onComplete:candleScene}, "+=1")
+			      	}
+		  		}
+			});
+		};
+
+		function candleLight() {
+			$(".candleInstruction").on("tap",function(e){
+				myFT.tracker("candleSceneInteract");
+				TweenMax.killTweensOf(t);
+				TweenMax.fromTo("#img4", 0.8, {autoAlpha:1}, {autoAlpha:0});
+				TweenMax.fromTo("#img5", 0.8, {autoAlpha:0}, {autoAlpha:1});
+				TweenMax.fromTo(".candleInstruction", 0.8, {autoAlpha:1}, {autoAlpha:0});
+				TweenMax.fromTo(".flicker", 0.8, {autoAlpha:0}, {autoAlpha:1});
+				TweenMax.fromTo(".candle", 0.5, {scale:0}, {scale:1})
+				e.preventDefault();
+			    e.stopPropagation();
+			    $(this).off('tap');
+			    $('.flicker').flicker( preset.candle );
+			    var tl = new TimelineMax;
+			    tl.fromTo(".candleScene", 0.5, {autoAlpha:1}, {autoAlpha:0, onComplete:videoScene}, "+=2");
+			    document.getElementById("logo").src = "img/logo.svg";
+			});
+		}
+
+		function waitForWebfonts(fonts, callback) {
+		    var loadedFonts = 0;
+
+		    for(var i = 0, l = fonts.length; i < l; ++i) {
+		    (
+		      function(font) {
+
+		        var node = document.createElement('span');
+		        // Characters that vary significantly among different fonts
+		        node.innerHTML = 'giItT1WQy@!-/#';
+		        // Visible - so we can measure it - but not on the screen
+		        node.style.position      = 'absolute';
+		        node.style.left          = '-10000px';
+		        node.style.top           = '-10000px';
+		        // Large font size makes even subtle changes obvious
+		        node.style.fontSize      = '300px';
+		        // Reset any font properties
+		        node.style.fontFamily    = 'sans-serif';
+		        node.style.fontVariant   = 'normal';
+		        node.style.fontStyle     = 'normal';
+		        node.style.fontWeight    = 'normal';
+		        node.style.letterSpacing = '0';
+		        document.body.appendChild(node);
+
+		        // Remember width with no applied web font
+		        var width = node.offsetWidth;
+
+		        node.style.fontFamily = font;
+
+		        var interval;
+
+		        function checkFont() {
+		          // Compare current width with original width
+		          if(node && node.offsetWidth != width) {
+		            ++loadedFonts;
+		            node.parentNode.removeChild(node);
+		            node = null;
+		          }
+
+		          // If all fonts have been loaded
+		          if(loadedFonts >= fonts.length) {
+		            if(interval) {
+		              clearInterval(interval);
+		            }
+		            if(loadedFonts == fonts.length) {
+		              if (!loadOnce){
+		                loadOnce = true;
+		                callback();
+		                return true;
+		              }
+		            }
+		          }
+		        };
+
+		        if(!checkFont()) {
+		          interval = setInterval(checkFont, 50);
+		          }
+		        }
+		      )
+		      (fonts[i]);
+		    }
+	  	};
+	</script>
+</body>
+</html>
